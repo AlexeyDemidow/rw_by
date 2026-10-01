@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 from httpx import Timeout, Limits
 
+from exeptions import FetchError, RETRYABLE
 from parse_text import parse_train
 
 logging.basicConfig(
