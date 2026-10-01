@@ -5,6 +5,7 @@ import asyncio
 import httpx
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
+from httpx import Timeout, Limits
 
 from parse_text import parse_train
 
@@ -14,6 +15,14 @@ date = '2026-10-23'
 
 base = 'https://pass.rw.by'
 url = '/ru/route'
+
+timeout = Timeout(15.0)
+limits = Limits(
+    max_connections=100,
+    max_keepalive_connections=20,
+    keepalive_expiry=30.0,
+)
+
 
 def get_random_user_agent():
     user_agent = UserAgent()
