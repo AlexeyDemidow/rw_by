@@ -88,6 +88,34 @@ def parse_trains(html: str) -> list[dict]:
     return trains
 
 
+async def check_route(
+    client: httpx.AsyncClient,
+    from_station: str,
+    to_station: str,
+    date: str,
+) -> list[dict] | None:
+    """Возвращает список поездов или None, если проверить не удалось."""
+    try:
+        r = await fetch(
+            client,
+            URL,
+            params={"from": from_station, "to": to_station, "date": date},
+        )
+    except FetchError as e:
+        log.error("Маршрут %s → %s (%s): %s", from_station, to_station, date, e)
+        return None
+
+    try:
+        trains = parse_trains(r.text)
+    except Exception as e:
+        log.exception("Ошибка парсинга %s", r.url)
+        return None
+
+    if not trains:
+        log.info("Поездов не найдено: %s", r.url)
+
+    return trains
+
 
 async def main():
     result = []
