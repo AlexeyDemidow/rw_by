@@ -12,9 +12,8 @@ from_station = 'Минск-Пассажирский'
 to_station = 'Светлогорск-на-Березине'
 date = '2026-10-23'
 
-# link_full = 'https://pass.rw.by/ru/route/?from=Минск-Пассажирский&to=Светлогорск-на-Березине&date=2026-10-23'
-link = 'https://pass.rw.by/ru/route'
-
+base = 'https://pass.rw.by'
+url = '/ru/route'
 
 def get_random_user_agent():
     user_agent = UserAgent()
@@ -24,11 +23,11 @@ def get_random_user_agent():
 async def main():
     result = []
     async with httpx.AsyncClient(
-            base_url=link,
+            base_url=base,
             timeout=5.0,
             headers={'User-Agent': get_random_user_agent()}
     ) as client:
-        r = await client.get("/", params={'from': from_station, 'to': to_station, 'date': date})
+        r = await client.get(url, params={'from': from_station, 'to': to_station, 'date': date})
         r.raise_for_status()
         soup = BeautifulSoup(r.text, 'html.parser')
         ss = soup.select('div.sch-table__row-wrap')
