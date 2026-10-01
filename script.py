@@ -67,9 +67,6 @@ async def fetch(
     log.error("Все %d попыток для %s провалились", retries, url)
     raise FetchError(f"Не удалось получить {url}") from last_exc
 
-def get_random_user_agent():
-    user_agent = UserAgent()
-    return user_agent.random
 
 def parse_trains(html: str) -> list[dict]:
     """Извлекает поезда из HTML. Сломанные строки пропускает с логом."""
