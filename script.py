@@ -22,11 +22,14 @@ logging.basicConfig(
 log = logging.getLogger("rw_parser")
 
 from_station = 'Минск-Пассажирский'
+# from_station = 'Владивосток'
 to_station = 'Светлогорск-на-Березине'
 date = '2026-10-23'
 
-base = 'https://pass.rw.by'
-url = '/ru/route'
+BASE = 'https://pass.rw.by'
+URL = '/ru/route'
+
+user_agent = UserAgent()
 
 timeout = Timeout(15.0)
 
