@@ -118,28 +118,23 @@ async def check_route(
 
 
 async def main():
-    result = []
     async with httpx.AsyncClient(
-            base_url=base,
-            timeout=timeout,
-            limits=limits,
-            headers={'User-Agent': get_random_user_agent()}
+        base_url=BASE,
+        timeout=timeout,
+        headers={"User-Agent": user_agent.random},
     ) as client:
-        r = await client.get(url, params={'from': from_station, 'to': to_station, 'date': date})
-        r.raise_for_status()
-        soup = BeautifulSoup(r.text, 'html.parser')
-        ss = soup.select('div.sch-table__row-wrap')
-        for i in ss:
-            if 'Выбрать места' in i.text:
-                result.append(parse_train(i.text))
-    pprint({
-        'trains': result,
-        'order_url': str(r.url)
-    })
-    return json.dumps({
-        'trains': result,
-        'order_url': str(r.url)
-    }, ensure_ascii=False)
+        trains = await check_route(client, from_station, to_station, date)
+
+    result = {
+        "trains": trains or [],
+        "order_url": str(
+            httpx.URL(BASE + URL).copy_merge_params(
+                {"from": from_station, "to": to_station, "date": date}
+            )
+        ),
+    }
+    pprint(result)
+    return json.dumps(result, ensure_ascii=False)
 
 
 if __name__ == "__main__":
