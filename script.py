@@ -28,12 +28,43 @@ base = 'https://pass.rw.by'
 url = '/ru/route'
 
 timeout = Timeout(15.0)
-limits = Limits(
-    max_connections=100,
-    max_keepalive_connections=20,
-    keepalive_expiry=30.0,
-)
 
+
+async def fetch(
+    client: httpx.AsyncClient,
+    url: str,
+    *,
+    params: dict | None = None,
+    retries: int = 3,
+    backoff: float = 1.5,
+) -> httpx.Response:
+    last_exc: Exception | None = None
+
+    for attempt in range(1, retries + 1):
+        try:
+            r = await client.get(url, params=params)
+
+            if 500 <= r.status_code < 600:
+                raise httpx.HTTPStatusError(
+                    f"server error {r.status_code}",
+                    request=r.request,
+                    response=r,
+                )
+
+            if 400 <= r.status_code < 500:
+                log.warning("HTTP %s на %s", r.status_code, r.url)
+                raise FetchError(f"HTTP {r.status_code} для {r.url}")
+
+            return r
+
+        except (httpx.HTTPStatusError, *RETRYABLE) as e:
+            last_exc = e
+            log.warning("Попытка %d/%d для %s не удалась: %s", attempt, retries, url, e)
+            if attempt < retries:
+                await asyncio.sleep(backoff ** attempt)
+
+    log.error("Все %d попыток для %s провалились", retries, url)
+    raise FetchError(f"Не удалось получить {url}") from last_exc
 
 def get_random_user_agent():
     user_agent = UserAgent()
