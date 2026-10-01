@@ -1,3 +1,4 @@
+import logging
 from pprint import pprint
 import json
 import asyncio
@@ -8,6 +9,16 @@ from fake_useragent import UserAgent
 from httpx import Timeout, Limits
 
 from parse_text import parse_train
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    handlers=[
+        logging.FileHandler("parser.log", encoding="utf-8"),
+        logging.StreamHandler(),
+    ],
+)
+log = logging.getLogger("rw_parser")
 
 from_station = 'Минск-Пассажирский'
 to_station = 'Светлогорск-на-Березине'
