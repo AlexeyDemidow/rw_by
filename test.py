@@ -34,10 +34,14 @@ async def main():
         for i in ss:
             if 'Выбрать места' in i.text:
                 result.append(parse_train(i.text))
-    result.append({'order_url': str(r.url)})
-    pprint(result)
-    # print(json.dumps(result, ensure_ascii=False))
-    return json.dumps(result, ensure_ascii=False)
+    pprint({
+        'trains': result,
+        'order_url': str(r.url)
+    })
+    return json.dumps({
+        'trains': result,
+        'order_url': str(r.url)
+    }, ensure_ascii=False)
 
 
 if __name__ == "__main__":
