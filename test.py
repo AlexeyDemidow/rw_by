@@ -33,7 +33,8 @@ async def main():
     result = []
     async with httpx.AsyncClient(
             base_url=base,
-            timeout=5.0,
+            timeout=timeout,
+            limits=limits,
             headers={'User-Agent': get_random_user_agent()}
     ) as client:
         r = await client.get(url, params={'from': from_station, 'to': to_station, 'date': date})
