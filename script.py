@@ -71,6 +71,23 @@ def get_random_user_agent():
     user_agent = UserAgent()
     return user_agent.random
 
+def parse_trains(html: str) -> list[dict]:
+    """Извлекает поезда из HTML. Сломанные строки пропускает с логом."""
+    soup = BeautifulSoup(html, "html.parser")
+    rows = soup.select("div.sch-table__row-wrap")
+
+    trains = []
+    for row in rows:
+        if "Выбрать места" not in row.text:
+            continue
+        try:
+            trains.append(parse_train(row.text))
+        except Exception as e:
+            log.warning("Не удалось разобрать строку: %s", e)
+            continue
+    return trains
+
+
 
 async def main():
     result = []
