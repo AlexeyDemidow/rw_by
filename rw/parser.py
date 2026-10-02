@@ -1,5 +1,13 @@
+import logging
 import re
+from decimal import Decimal
 
+from bs4 import BeautifulSoup
+
+from app.schemas import Train
+from app.exceptions import ParseError
+
+log = logging.getLogger(__name__)
 
 RE_HEADER = re.compile(
     r'(?P<train_type>[А-Яа-я\s\-]+?класса)\s+'
@@ -27,7 +35,7 @@ def parse_options(text: str) -> list[dict]:
     options, last_seats = [], None
     for m in RE_OPTION.finditer(text):
         seats = int(m.group('seats')) if m.group('seats') else last_seats
-        price = float(m.group('price').replace(',', '.'))
+        price = Decimal(m.group('price').replace(',', '.'))
         options.append({'seats': seats, 'price': price})
         if m.group('seats'):
             last_seats = int(m.group('seats'))
@@ -41,7 +49,7 @@ def parse_train(block: str) -> dict:
 
     m = RE_HEADER.search(block)
     if not m:
-        raise ValueError(f"Не распознана шапка: {block[:80]}...")
+        raise ParseError(f"Не распознана шапка: {block[:80]}...")
     result = m.groupdict()
     result['badges'] = badges
     rest = block[m.end():]
@@ -64,3 +72,24 @@ def parse_train(block: str) -> dict:
         })
     result['carriages'] = carriages
     return result
+
+
+def parse_trains(html: str) -> list[Train]:
+    soup = BeautifulSoup(html, "html.parser")
+    rows = [
+        r.get_text(" ", strip=True)
+        for r in soup.select("div.sch-table__row-wrap")
+    ]
+    candidates = [t for t in rows if "Выбрать места" in t]
+
+    trains, failed = [], 0
+    for text in candidates:
+        try:
+            trains.append(Train.model_validate(parse_train(text)))
+        except (ParseError, ValueError) as e:   # ValidationError наследует ValueError
+            failed += 1
+            log.warning("Не удалось разобрать строку: %s", e)
+
+    if candidates and not trains:
+        raise ParseError(f"Не разобрано ни одной из {failed} строк, вёрстка изменилась?")
+    return trains
