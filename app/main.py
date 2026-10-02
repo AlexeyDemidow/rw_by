@@ -1,23 +1,21 @@
 import logging
 from contextlib import asynccontextmanager
 from datetime import date
+from typing import Annotated
 
 import httpx
 from fake_useragent import UserAgent
-from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException, Query, Request
 
 from app.config import settings
 from app.exceptions import FetchError, ParseError
-from rw.service import build_order_url, get_trains
 from app.schemas import TrainsResponse
+from rw.service import build_order_url, get_trains
 
-# from_station = 'Минск-Пассажирский'
-# from_station = 'Владивосток'
-# to_station = 'Светлогорск-на-Березине'
-# date = '2026-10-23'
-
-logging.basicConfig(level=logging.INFO,
-                    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
 
 
 @asynccontextmanager
@@ -30,6 +28,7 @@ async def lifespan(application: FastAPI):
         application.state.http = client
         yield
 
+
 app = FastAPI(lifespan=lifespan)
 
 
@@ -37,9 +36,71 @@ def get_client(request: Request) -> httpx.AsyncClient:
     return request.app.state.http
 
 
-@app.get("/trains", response_model=TrainsResponse)
-async def trains(dep_station: str, arr_station: str, trip_date: date,
-                 client: httpx.AsyncClient = Depends(get_client)):
+Client = Annotated[httpx.AsyncClient, Depends(get_client)]
+
+DepStation = Annotated[
+    str,
+    Query(
+        min_length=1,
+        description="Название станции отправления.",
+        openapi_examples={
+            "minsk": {
+                "summary": "Минск",
+                "value": "Минск-Пассажирский",
+            },
+            "brest": {
+                "summary": "Брест",
+                "value": "Брест-Центральный",
+            },
+        },
+    ),
+]
+
+ArrStation = Annotated[
+    str,
+    Query(
+        min_length=1,
+        description="Название станции прибытия.",
+        openapi_examples={
+            "svetlogorsk": {
+                "summary": "Светлогорск",
+                "value": "Светлогорск-на-Березине",
+            },
+            "gomel": {
+                "summary": "Гомель",
+                "value": "Гомель",
+            },
+        },
+    ),
+]
+
+TripDate = Annotated[
+    date,
+    Query(
+        description="Дата поездки (YYYY-MM-DD).",
+        openapi_examples={
+            "sample": {
+                "summary": "Пример даты",
+                "value": "2026-10-23",
+            },
+        },
+    ),
+]
+
+
+@app.get(
+    "/trains",
+    tags=['Расписание'],
+    response_model=TrainsResponse,
+    summary="Список поездов по маршруту",
+    description="Возвращает поезда по дате, станции отправления и станции прибытия.",
+)
+async def trains(
+    dep_station: DepStation,
+    arr_station: ArrStation,
+    trip_date: TripDate,
+    client: Client,
+):
     try:
         found = await get_trains(client, dep_station, arr_station, trip_date)
     except FetchError as e:
