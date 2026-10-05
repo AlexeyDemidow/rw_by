@@ -7,10 +7,10 @@ import httpx
 from fake_useragent import UserAgent
 from fastapi import Depends, FastAPI, HTTPException, Query, Request
 
-from app.config import settings
-from app.exceptions import FetchError, ParseError
-from app.schemas import TrainsResponse
-from rw.service import build_order_url, get_trains
+from backend.app.config import settings
+from backend.app.exceptions import FetchError, ParseError
+from backend.app.schemas import TrainsResponse
+from backend.rw.service import build_order_url, get_trains
 
 logging.basicConfig(
     level=logging.INFO,

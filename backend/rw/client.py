@@ -4,7 +4,7 @@ import random
 
 import httpx
 
-from app.exceptions import FetchError, RETRYABLE
+from backend.app.exceptions import FetchError, RETRYABLE
 
 log = logging.getLogger(__name__)
 

@@ -4,8 +4,8 @@ from decimal import Decimal
 
 from bs4 import BeautifulSoup
 
-from app.schemas import Train
-from app.exceptions import ParseError
+from backend.app.schemas import Train
+from backend.app.exceptions import ParseError
 
 log = logging.getLogger(__name__)
 

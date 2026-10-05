@@ -1,10 +1,10 @@
 from datetime import date
 import httpx
 
-from app.config import settings
-from rw.client import fetch
-from rw.parser import parse_trains
-from app.schemas import Train
+from backend.app.config import settings
+from backend.rw.client import fetch
+from backend.rw.parser import parse_trains
+from backend.app.schemas import Train
 
 
 async def get_trains(client: httpx.AsyncClient, dep: str, arr: str, d: date) -> list[Train]:
