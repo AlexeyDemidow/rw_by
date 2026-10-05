@@ -23,6 +23,7 @@ async def lifespan(application: FastAPI):
     async with httpx.AsyncClient(
         base_url=settings.BASE,
         timeout=httpx.Timeout(15.0),
+        limits=httpx.Limits(max_connections=5, max_keepalive_connections=5),  # пока условные значения
         headers={"User-Agent": UserAgent().random},
     ) as client:
         application.state.http = client
