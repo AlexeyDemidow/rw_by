@@ -12,14 +12,12 @@ router = Router()
 from aiogram import F
 
 
-# 1. Хэндлер СТАРТ: только клавиатура
 @router.message(Command("start"))
 async def cmd_start(message: Message, state: FSMContext):
     await message.answer("👋 Добро пожаловать!", reply_markup=mode_keyboard)
     await state.set_state(BotStates.start)
 
 
-# 2. Ловим текст конкретной кнопки (например, "Расписание поездов")
 @router.message(F.text == "Минск-Светлогорск 21.10.2026", BotStates.start)
 async def handle_schedule_text(message: Message, state: FSMContext):
     response = await ask_backend(
@@ -36,14 +34,13 @@ async def handle_schedule_text(message: Message, state: FSMContext):
         await message.answer("⚠️ Сервер временно недоступен")
 
 
-# 3. Ловим текст другой кнопки (например, "Помощь")
 @router.message(F.text == "Светлогорск-Минск 25.10.2026", BotStates.start)
 async def handle_schedule_text_another(message: Message, state: FSMContext):
 
     response = await ask_backend(
         payload={
-            'dep_station': 'Минск-Пассажирский',
-            'arr_station': 'Светлогорск-на-Березине',
+            'dep_station': 'Светлогорск-на-Березине',
+            'arr_station': 'Минск-Пассажирский',
             'trip_date': '2026-10-25',
         }
     )
