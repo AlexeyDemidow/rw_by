@@ -21,7 +21,7 @@ logging.basicConfig(
 @asynccontextmanager
 async def lifespan(application: FastAPI):
     async with httpx.AsyncClient(
-        base_url=settings.BASE,
+        base_url=settings.base,
         timeout=httpx.Timeout(15.0),
         limits=httpx.Limits(max_connections=5, max_keepalive_connections=5),  # пока условные значения
         headers={"User-Agent": UserAgent().random},
@@ -111,5 +111,5 @@ async def trains(
         raise HTTPException(502, "Не удалось разобрать ответ rw.by")
     return TrainsResponse(
         trains=found,
-        order_url=build_order_url(settings.BASE, dep_station, arr_station, trip_date),
+        order_url=build_order_url(settings.base, dep_station, arr_station, trip_date),
     )
