@@ -8,11 +8,11 @@ from backend.app.schemas import Train
 
 
 async def get_trains(client: httpx.AsyncClient, dep: str, arr: str, d: date) -> list[Train]:
-    r = await fetch(client, settings.URL, params={"from": dep, "to": arr, "date": d.isoformat()})
+    r = await fetch(client, settings.url, params={"from": dep, "to": arr, "date": d.isoformat()})
     return parse_trains(r.text)
 
 
 def build_order_url(base: str, dep: str, arr: str, d: date) -> str:
-    return str(httpx.URL(base + settings.URL).copy_merge_params(
+    return str(httpx.URL(base + settings.url).copy_merge_params(
         {"from": dep, "to": arr, "date": d.isoformat()}
     ))
