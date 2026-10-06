@@ -3,11 +3,12 @@ from datetime import datetime, timedelta
 from aiogram import Router, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message
+from aiogram.types import Message, CallbackQuery
 from aiogram_calendar import SimpleCalendar, SimpleCalendarCallback
 
-from tg_bot.keyboards.keyboards import mode_keyboard
+from tg_bot.keyboards.keyboards import build_routes_inline
 from tg_bot.service.client import ask_backend
+from tg_bot.utils.formatters import format_trains, split_message
 from tg_bot.utils.states import BotStates
 
 router = Router()
@@ -57,17 +58,59 @@ async def process_calendar_selection(
         await callback.answer()
 
 
-@router.message(F.text == "Светлогорск-Минск 25.10.2026", BotStates.start)
-async def handle_schedule_text_another(message: Message, state: FSMContext):
+@router.callback_query(F.data == "route:minsk_svetlogorsk")
+async def handle_minsk_svetlogorsk(callback: CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    trip_date = data.get("trip_date")
 
-    response = await ask_backend(
-        payload={
-            'dep_station': 'Светлогорск-на-Березине',
-            'arr_station': 'Минск-Пассажирский',
-            'trip_date': '2026-10-25',
-        }
-    )
-    if response:
-        await message.answer(str(response))
-    else:
-        await message.answer("⚠️ Сервер временно недоступен")
+    if not trip_date:
+        await callback.message.answer("⚠️ Сначала выберите дату через /start")
+        await callback.answer()
+        return
+
+    response = await ask_backend(payload={
+        "dep_station": "Минск-Пассажирский",
+        "arr_station": "Светлогорск-на-Березине",
+        "trip_date": trip_date,
+    })
+
+    if not response:
+        await callback.message.answer("⚠️ Сервер временно недоступен")
+        await callback.answer()
+        return
+
+    text = format_trains(response)
+
+    for chunk in split_message(text):
+        await callback.message.answer(chunk, parse_mode="HTML")
+
+    await callback.answer()
+
+
+@router.callback_query(F.data == "route:svetlogorsk_minsk")
+async def handle_svetlogorsk_minsk(callback: CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    trip_date = data.get("trip_date")
+
+    if not trip_date:
+        await callback.message.answer("⚠️ Сначала выберите дату через /start")
+        await callback.answer()
+        return
+
+    response = await ask_backend(payload={
+        "dep_station": "Светлогорск-на-Березине",
+        "arr_station": "Минск-Пассажирский",
+        "trip_date": trip_date,
+    })
+
+    if not response:
+        await callback.message.answer("⚠️ Сервер временно недоступен")
+        await callback.answer()
+        return
+
+    text = format_trains(response)
+
+    for chunk in split_message(text):
+        await callback.message.answer(chunk, parse_mode="HTML")
+
+    await callback.answer()
