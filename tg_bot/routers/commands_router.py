@@ -1,7 +1,10 @@
-from aiogram import Router
+from datetime import datetime, timedelta
+
+from aiogram import Router, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
+from aiogram_calendar import SimpleCalendar, SimpleCalendarCallback
 
 from tg_bot.keyboards.keyboards import mode_keyboard
 from tg_bot.service.client import ask_backend
@@ -9,12 +12,20 @@ from tg_bot.utils.states import BotStates
 
 router = Router()
 
-from aiogram import F
-
 
 @router.message(Command("start"))
 async def cmd_start(message: Message, state: FSMContext):
-    await message.answer("👋 Добро пожаловать!", reply_markup=mode_keyboard)
+    today = datetime.now()
+    max_date = today + timedelta(days=30)
+
+    calendar = SimpleCalendar(show_alerts=True)
+    # Задаем диапазон дат внутри календаря
+    calendar.set_dates_range(today, max_date)
+
+    await message.answer(
+        f"Привет! Выберите дату (доступно с {today.strftime('%d.%m.%Y')} по {max_date.strftime('%d.%m.%Y')}):",
+        reply_markup=await calendar.start_calendar()
+    )
     await state.set_state(BotStates.start)
 
 
