@@ -29,20 +29,32 @@ async def cmd_start(message: Message, state: FSMContext):
     await state.set_state(BotStates.start)
 
 
-@router.message(F.text == "Минск-Светлогорск 21.10.2026", BotStates.start)
-async def handle_schedule_text(message: Message, state: FSMContext):
-    response = await ask_backend(
-        payload={
-            'dep_station': 'Минск-Пассажирский',
-            'arr_station': 'Светлогорск-на-Березине',
-            'trip_date': '2026-10-21',
-        }
-    )
+@router.callback_query(SimpleCalendarCallback.filter())
+async def process_calendar_selection(
+        callback: CallbackQuery,
+        callback_data: SimpleCalendarCallback,
+        state: FSMContext
+):
+    # Повторяем те же ограничения при обработке клика, чтобы календарь корректно отображал фильтр
+    today = datetime.now()
+    max_date = today + timedelta(days=30)
 
-    if response:
-        await message.answer(str(response))
-    else:
-        await message.answer("⚠️ Сервер временно недоступен")
+    calendar = SimpleCalendar(show_alerts=True)
+    calendar.set_dates_range(today, max_date)
+
+    # Обрабатываем выбор пользователя
+    selected, date = await calendar.process_selection(callback, callback_data)
+
+    if selected:
+        # сохраняем выбранную дату в FSM
+        await state.update_data(trip_date=date.strftime('%Y-%m-%d'))
+
+        await callback.message.edit_text(
+            f"✅ Вы успешно выбрали дату: {date.strftime('%d.%m.%Y')}\nТеперь выберите маршрут:",
+            reply_markup=build_routes_inline(),
+        )
+
+        await callback.answer()
 
 
 @router.message(F.text == "Светлогорск-Минск 25.10.2026", BotStates.start)
