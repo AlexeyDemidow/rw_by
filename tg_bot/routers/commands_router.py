@@ -49,14 +49,12 @@ async def process_calendar_selection(
     selected, date = await _calendar().process_selection(callback, callback_data)
 
     if selected:
-        # сохраняем выбранную дату в FSM
-        await state.update_data(trip_date=date.strftime('%Y-%m-%d'))
+        await state.update_data(trip_date=date.strftime("%Y-%m-%d"))
 
         await callback.message.edit_text(
-            f"✅ Вы успешно выбрали дату: {date.strftime('%d.%m.%Y')}\nТеперь выберите маршрут:",
-            reply_markup=build_routes_inline(),
+            f"✅ Дата: {date.strftime('%d.%m.%Y')}\nВыберите станцию отправления:",
+            reply_markup=build_stations_inline(step="from"),
         )
-
         await callback.answer()
 
 
