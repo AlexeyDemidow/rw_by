@@ -155,3 +155,11 @@ def build_stations_inline(step: str = "from", page: int = 0, src: int = -1) -> I
         ),
     )
     return kb.as_markup()
+
+
+def build_again_inline() -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+    kb.button(text="🔁 Другой маршрут", callback_data="again:route")
+    kb.button(text="📅 Другая дата и маршрут", callback_data="again:date")
+    kb.adjust(1)
+    return kb.as_markup()
