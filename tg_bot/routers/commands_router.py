@@ -60,6 +60,10 @@ async def process_calendar_selection(
 
 @router.callback_query(F.data == "route:minsk_svetlogorsk")
 async def handle_minsk_svetlogorsk(callback: CallbackQuery, state: FSMContext):
+@router.callback_query(StationCb.filter(F.action == "no_action"))
+async def on_noop(callback: CallbackQuery):
+    await callback.answer()
+
     data = await state.get_data()
     trip_date = data.get("trip_date")
 
