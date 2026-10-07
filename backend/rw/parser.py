@@ -10,7 +10,7 @@ from backend.app.exceptions import ParseError
 log = logging.getLogger(__name__)
 
 RE_HEADER = re.compile(
-    r'(?P<train_type>[А-Яа-я\s\-]+?класса)\s+'
+    r'(?P<train_type>[А-Яа-я\s\-]+?(?:класса|линии))\s+'
     r'(?P<train_number>\d+[А-Яа-я]?)\s+'
     r'(?P<from_station>.+?)\s+—\s+'
     r'(?P<to_station>.+?)\s+Маршрут\s+'
