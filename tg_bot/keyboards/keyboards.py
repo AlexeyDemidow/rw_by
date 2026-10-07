@@ -2,7 +2,6 @@ from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 
-def build_routes_inline() -> InlineKeyboardMarkup:
 stations = [
     "Барановичи",
     "Бастуны",
@@ -110,6 +109,11 @@ stations = [
     "Шумилино",
     "Юратишки",
 ]
+
+# Сортируем, оригинальные значения (с "+") сохраняем для парсера
+STATIONS: list[str] = sorted(stations, key=lambda s: s.replace("+", " "))
+PAGE_SIZE = 12  # 6 рядов по 2 кнопки
+
     kb = InlineKeyboardBuilder()
     kb.button(text="Минск → Светлогорск", callback_data="route:minsk_svetlogorsk")
     kb.button(text="Светлогорск → Минск", callback_data="route:svetlogorsk_minsk")
