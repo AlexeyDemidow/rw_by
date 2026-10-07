@@ -125,8 +125,33 @@ class StationCb(CallbackData, prefix="st"):
     value: int = 0    # номер страницы или индекс станции
     src: int = -1     # индекс станции отправления (для шага "to")
 
+
+def build_stations_inline(step: str = "from", page: int = 0, src: int = -1) -> InlineKeyboardMarkup:
+    # на шаге "to" исключаем станцию отправления
+    indices = [i for i in range(len(STATIONS)) if i != src]
+    total_pages = max(1, ceil(len(indices) / PAGE_SIZE))
+    page %= total_pages  # зацикливаем: после последней страницы — первая
+
     kb = InlineKeyboardBuilder()
-    kb.button(text="Минск → Светлогорск", callback_data="route:minsk_svetlogorsk")
-    kb.button(text="Светлогорск → Минск", callback_data="route:svetlogorsk_minsk")
-    kb.adjust(1)
+    for i in indices[page * PAGE_SIZE:(page + 1) * PAGE_SIZE]:
+        kb.button(
+            text=station_title(i),
+            callback_data=StationCb(action="pick", step=step, value=i, src=src),
+        )
+    kb.adjust(2)
+
+    kb.row(
+        InlineKeyboardButton(
+            text="◀️",
+            callback_data=StationCb(action="page", step=step, value=(page - 1) % total_pages, src=src).pack(),
+        ),
+        InlineKeyboardButton(
+            text=f"{page + 1}/{total_pages}",
+            callback_data=StationCb(action="no_action", step=step).pack(),
+        ),
+        InlineKeyboardButton(
+            text="▶️",
+            callback_data=StationCb(action="page", step=step, value=(page + 1) % total_pages, src=src).pack(),
+        ),
+    )
     return kb.as_markup()
