@@ -118,6 +118,13 @@ PAGE_SIZE = 12  # 6 рядов по 2 кнопки
 def station_title(idx: int) -> str:
     return STATIONS[idx].replace("+", " ")
 
+
+class StationCb(CallbackData, prefix="st"):
+    action: str       # действия на клавиатуре
+    step: str         # "from" | "to"
+    value: int = 0    # номер страницы или индекс станции
+    src: int = -1     # индекс станции отправления (для шага "to")
+
     kb = InlineKeyboardBuilder()
     kb.button(text="Минск → Светлогорск", callback_data="route:minsk_svetlogorsk")
     kb.button(text="Светлогорск → Минск", callback_data="route:svetlogorsk_minsk")
