@@ -6,7 +6,13 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 from aiogram_calendar import SimpleCalendar, SimpleCalendarCallback
 
-from tg_bot.keyboards.keyboards import build_routes_inline
+from tg_bot.keyboards.keyboards import (
+    STATIONS,
+    StationCb,
+    build_stations_inline,
+    station_title,
+    build_again_inline,
+)
 from tg_bot.service.client import ask_backend
 from tg_bot.utils.formatters import format_trains, split_message
 from tg_bot.utils.states import BotStates
