@@ -20,6 +20,13 @@ from tg_bot.utils.states import BotStates
 router = Router()
 
 
+def _calendar() -> SimpleCalendar:
+    today = datetime.now()
+    calendar = SimpleCalendar(show_alerts=True)
+    calendar.set_dates_range(today, today + timedelta(days=30))
+    return calendar
+
+
 @router.message(Command("start"))
 async def cmd_start(message: Message, state: FSMContext):
     today = datetime.now()
