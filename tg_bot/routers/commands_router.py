@@ -70,17 +70,41 @@ async def on_page(callback: CallbackQuery, callback_data: StationCb):
     )
     await callback.answer()
 
+
+@router.callback_query(StationCb.filter(F.action == "pick"))
+async def on_pick(callback: CallbackQuery, callback_data: StationCb, state: FSMContext):
     data = await state.get_data()
     trip_date = data.get("trip_date")
 
+    # состояние могло сброситься (перезапуск бота, повторный /start)
     if not trip_date:
         await callback.message.answer("⚠️ Сначала выберите дату через /start")
         await callback.answer()
         return
 
+    # выбор отправления
+    if callback_data.step == "from":
+        await callback.message.edit_text(
+            f"Отправление: <b>{station_title(callback_data.value)}</b>\nВыберите станцию прибытия:",
+            reply_markup=build_stations_inline(step="to", page=0, src=callback_data.value),
+            parse_mode="HTML",
+        )
+        await callback.answer()
+        return
+
+    # выбор станции прибытия
+    dep = STATIONS[callback_data.src]
+    arr = STATIONS[callback_data.value]
+
+    await callback.message.edit_text(
+        f"Маршрут: <b>{station_title(callback_data.src)} → {station_title(callback_data.value)}</b>\n"
+        f"Дата: {datetime.strptime(trip_date, '%Y-%m-%d').strftime('%d.%m.%Y')}",
+        parse_mode="HTML",
+    )
+
     response = await ask_backend(payload={
-        "dep_station": "Минск-Пассажирский",
-        "arr_station": "Светлогорск-на-Березине",
+        "dep_station": dep,
+        "arr_station": arr,
         "trip_date": trip_date,
     })
 
@@ -89,38 +113,13 @@ async def on_page(callback: CallbackQuery, callback_data: StationCb):
         await callback.answer()
         return
 
-    text = format_trains(response)
-
-    for chunk in split_message(text):
-        await callback.message.answer(chunk, parse_mode="HTML")
-
-    await callback.answer()
-
-
-@router.callback_query(F.data == "route:svetlogorsk_minsk")
-async def handle_svetlogorsk_minsk(callback: CallbackQuery, state: FSMContext):
-    data = await state.get_data()
-    trip_date = data.get("trip_date")
-
-    if not trip_date:
-        await callback.message.answer("⚠️ Сначала выберите дату через /start")
-        await callback.answer()
-        return
-
-    response = await ask_backend(payload={
-        "dep_station": "Светлогорск-на-Березине",
-        "arr_station": "Минск-Пассажирский",
-        "trip_date": trip_date,
-    })
-
-    if not response:
-        await callback.message.answer("⚠️ Сервер временно недоступен")
-        await callback.answer()
-        return
-
-    text = format_trains(response)
-
-    for chunk in split_message(text):
-        await callback.message.answer(chunk, parse_mode="HTML")
+    chunks = split_message(format_trains(response))
+    for i, chunk in enumerate(chunks):
+        is_last = i == len(chunks) - 1
+        await callback.message.answer(
+            chunk,
+            parse_mode="HTML",
+            reply_markup=build_again_inline() if is_last else None,
+        )
 
     await callback.answer()
