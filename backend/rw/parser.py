@@ -20,7 +20,7 @@ DURATION = r'\d+\s*(?:д|ч|мин)(?:\s+\d+\s*(?:ч|мин))*'
 RE_TIMES = re.compile(
     r'(?P<dep_time>\d{2}:\d{2})\s+(?P<dep_station>.+?)\s+'
     r'(?P<arr_time>\d{2}:\d{2})\s+(?P<arr_station>.+?)\s+'
-    r'(?P<duration>\d+\s*ч\s*\d+\s*мин)\s+'
+    rf'(?P<duration>{DURATION})(?:\s+|$)'
 )
 RE_DAYS = re.compile(
     r'Дни курсирования:\s+(?P<days>.+?)\s+\d+\s*ч\s*\d+\s*мин\s+'
