@@ -32,6 +32,7 @@ RE_CARRIAGE = re.compile(
 )
 RE_OPTION = re.compile(r'(?:(?P<seats>\d+)\s+)?(?P<price>[\d,]+)\s*BYN')
 BADGES = re.compile(r'\b(Самый недорогой|Самый быстрый)\b')
+RE_BUY = re.compile(r'\b(Выбрать места|Купить поездку)\b')
 
 
 def parse_options(text: str) -> list[dict]:
