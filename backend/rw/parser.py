@@ -23,7 +23,8 @@ RE_TIMES = re.compile(
     rf'(?P<duration>{DURATION})(?:\s+|$)'
 )
 RE_DAYS = re.compile(
-    r'Дни курсирования:\s+(?P<days>.+?)\s+\d+\s*ч\s*\d+\s*мин\s+'
+    r'Дни курсирования:\s+(?P<days>.+?)'
+    rf'(?=\s+{DURATION}|\s+[А-Яа-яЁё]+\s+(?:\d+\s+)?[\d,]+\s*BYN|\s*$)'
 )
 RE_CARRIAGE = re.compile(
     r'(?P<carriage_type>[А-Яа-я]+)\s+'
