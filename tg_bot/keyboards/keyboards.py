@@ -114,6 +114,10 @@ stations = [
 STATIONS: list[str] = sorted(stations, key=lambda s: s.replace("+", " "))
 PAGE_SIZE = 12  # 6 рядов по 2 кнопки
 
+
+def station_title(idx: int) -> str:
+    return STATIONS[idx].replace("+", " ")
+
     kb = InlineKeyboardBuilder()
     kb.button(text="Минск → Светлогорск", callback_data="route:minsk_svetlogorsk")
     kb.button(text="Светлогорск → Минск", callback_data="route:svetlogorsk_minsk")
