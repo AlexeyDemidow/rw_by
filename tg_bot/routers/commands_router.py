@@ -123,3 +123,38 @@ async def on_pick(callback: CallbackQuery, callback_data: StationCb, state: FSMC
         )
 
     await callback.answer()
+
+
+@router.callback_query(F.data == "again:route")
+async def on_again_route(callback: CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    trip_date = data.get("trip_date")
+
+    if not trip_date:
+        await callback.message.answer("⚠️ Сначала выберите дату через /start")
+        await callback.answer()
+        return
+
+    # убираем кнопки у старого сообщения, чтобы не плодить дубли
+    await callback.message.edit_reply_markup(reply_markup=None)
+
+    await callback.message.answer(
+        f"Дата: {datetime.strptime(trip_date, '%Y-%m-%d').strftime('%d.%m.%Y')}\n"
+        "Выберите станцию отправления:",
+        reply_markup=build_stations_inline(step="from"),
+    )
+    await callback.answer()
+
+
+@router.callback_query(F.data == "again:date")
+async def on_again_date(callback: CallbackQuery, state: FSMContext):
+    today = datetime.now()
+    max_date = today + timedelta(days=30)
+
+    await callback.message.edit_reply_markup(reply_markup=None)
+
+    await callback.message.answer(
+        f"Выберите дату (доступно с {today.strftime('%d.%m.%Y')} по {max_date.strftime('%d.%m.%Y')}):",
+        reply_markup=await _calendar().start_calendar(),
+    )
+    await callback.answer()
