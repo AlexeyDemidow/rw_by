@@ -15,6 +15,8 @@ RE_HEADER = re.compile(
     r'(?P<from_station>.+?)\s+—\s+'
     r'(?P<to_station>.+?)\s+Маршрут\s+'
 )
+DURATION = r'\d+\s*(?:д|ч|мин)(?:\s+\d+\s*(?:ч|мин))*'
+
 RE_TIMES = re.compile(
     r'(?P<dep_time>\d{2}:\d{2})\s+(?P<dep_station>.+?)\s+'
     r'(?P<arr_time>\d{2}:\d{2})\s+(?P<arr_station>.+?)\s+'
