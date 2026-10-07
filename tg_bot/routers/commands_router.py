@@ -58,10 +58,16 @@ async def process_calendar_selection(
         await callback.answer()
 
 
-@router.callback_query(F.data == "route:minsk_svetlogorsk")
-async def handle_minsk_svetlogorsk(callback: CallbackQuery, state: FSMContext):
 @router.callback_query(StationCb.filter(F.action == "no_action"))
 async def on_noop(callback: CallbackQuery):
+    await callback.answer()
+
+
+@router.callback_query(StationCb.filter(F.action == "page"))
+async def on_page(callback: CallbackQuery, callback_data: StationCb):
+    await callback.message.edit_reply_markup(
+        reply_markup=build_stations_inline(callback_data.step, callback_data.value, callback_data.src)
+    )
     await callback.answer()
 
     data = await state.get_data()
