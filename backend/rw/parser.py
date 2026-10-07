@@ -84,7 +84,7 @@ def parse_trains(html: str) -> list[Train]:
         r.get_text(" ", strip=True)
         for r in soup.select("div.sch-table__row-wrap")
     ]
-    candidates = [t for t in rows if "Выбрать места" in t]
+    candidates = [t for t in rows if RE_BUY.search(t)]
 
     trains, failed = [], 0
     for text in candidates:
