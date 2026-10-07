@@ -32,32 +32,21 @@ async def cmd_start(message: Message, state: FSMContext):
     today = datetime.now()
     max_date = today + timedelta(days=30)
 
-    calendar = SimpleCalendar(show_alerts=True)
-    # Задаем диапазон дат внутри календаря
-    calendar.set_dates_range(today, max_date)
-
+    await state.clear()
     await message.answer(
         f"Привет! Выберите дату (доступно с {today.strftime('%d.%m.%Y')} по {max_date.strftime('%d.%m.%Y')}):",
-        reply_markup=await calendar.start_calendar()
+        reply_markup=await _calendar().start_calendar(),
     )
     await state.set_state(BotStates.start)
 
 
 @router.callback_query(SimpleCalendarCallback.filter())
 async def process_calendar_selection(
-        callback: CallbackQuery,
-        callback_data: SimpleCalendarCallback,
-        state: FSMContext
+    callback: CallbackQuery,
+    callback_data: SimpleCalendarCallback,
+    state: FSMContext
 ):
-    # Повторяем те же ограничения при обработке клика, чтобы календарь корректно отображал фильтр
-    today = datetime.now()
-    max_date = today + timedelta(days=30)
-
-    calendar = SimpleCalendar(show_alerts=True)
-    calendar.set_dates_range(today, max_date)
-
-    # Обрабатываем выбор пользователя
-    selected, date = await calendar.process_selection(callback, callback_data)
+    selected, date = await _calendar().process_selection(callback, callback_data)
 
     if selected:
         # сохраняем выбранную дату в FSM
