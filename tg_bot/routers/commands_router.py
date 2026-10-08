@@ -183,6 +183,19 @@ async def cmd_subscriptions(message: Message):
         return
     await message.answer("Ваши подписки (нажмите, чтобы отменить):", reply_markup=build_unsub_inline(items))
 
+
+@router.callback_query(F.data.startswith("unsub:"))
+async def on_unsub(callback: CallbackQuery):
+    chat_id = callback.message.chat.id
+    subscriptions.remove(int(callback.data.split(":")[1]), chat_id)
+    items = subscriptions.list_for_chat(chat_id)
+    if items:
+        await callback.message.edit_reply_markup(reply_markup=build_unsub_inline(items))
+    else:
+        await callback.message.edit_text("Подписок больше нет.")
+    await callback.answer("Подписка отменена")
+
+
 @router.callback_query(F.data == "again:route")
 async def on_again_route(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
