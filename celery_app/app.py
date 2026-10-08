@@ -15,7 +15,7 @@ celery.conf.update(
     task_ignore_result=True,          # результаты нам пока не нужны
     task_acks_late=True,
     worker_prefetch_multiplier=1,
-    worker_pool="solo",
+    worker_pool="solo",  # для windows
     beat_schedule={
         "send-subscriptions": {
             "task": "celery_app.tasks.send_subscriptions",
