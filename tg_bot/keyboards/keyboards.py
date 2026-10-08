@@ -175,3 +175,13 @@ def build_route_actions_inline() -> InlineKeyboardMarkup:
     kb.button(text="🔔 Присылать регулярно", callback_data="route:sub")
     kb.adjust(1)
     return kb.as_markup()
+
+
+def build_unsub_inline(items: list[dict]) -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+    for s in items:
+        d = date.fromisoformat(s["trip_date"]).strftime("%d.%m")
+        title = f"❌ {s['dep'].replace('+', ' ')} → {s['arr'].replace('+', ' ')}, {d}"
+        kb.button(text=title, callback_data=f"unsub:{s['id']}")
+    kb.adjust(1)
+    return kb.as_markup()
