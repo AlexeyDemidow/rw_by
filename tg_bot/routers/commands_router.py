@@ -123,14 +123,24 @@ async def _route_from_state(callback: CallbackQuery, state: FSMContext):
     return trip_date, dep, arr
 
 
-    response = await ask_backend(payload={
-        "dep_station": dep,
-        "arr_station": arr,
-        "trip_date": trip_date,
-    })
+@router.callback_query(F.data == "route:now")
+async def on_route_now(callback: CallbackQuery, state: FSMContext):
+    route = await _route_from_state(callback, state)
+    if not route:
+        return
+    trip_date, dep, arr = route
 
-    if not response:
-        await callback.message.answer("⚠️ Сервер временно недоступен")
+    try:
+        response = await ask_backend(payload={
+            "dep_station": dep,
+            "arr_station": arr,
+            "trip_date": trip_date,
+        })
+    except (aiohttp.ClientError, asyncio.TimeoutError):
+        await callback.message.answer(
+            "⚠️ Сервер временно недоступен",
+            reply_markup=build_again_inline(),
+        )
         await callback.answer()
         return
 
@@ -142,6 +152,8 @@ async def _route_from_state(callback: CallbackQuery, state: FSMContext):
             parse_mode="HTML",
             reply_markup=build_again_inline() if is_last else None,
         )
+    await callback.answer()
+
 
     await callback.answer()
 
