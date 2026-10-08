@@ -112,6 +112,17 @@ async def on_pick(callback: CallbackQuery, callback_data: StationCb, state: FSMC
     )
     await callback.answer()
 
+
+async def _route_from_state(callback: CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    trip_date, dep, arr = data.get("trip_date"), data.get("dep"), data.get("arr")
+    if not (trip_date and dep and arr):
+        await callback.message.answer("⚠️ Сначала выберите дату и маршрут через /start")
+        await callback.answer()
+        return None
+    return trip_date, dep, arr
+
+
     response = await ask_backend(payload={
         "dep_station": dep,
         "arr_station": arr,
