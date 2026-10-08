@@ -12,6 +12,8 @@ class Settings(BaseSettings):
 
     backend_url: str
 
+    redis_url: str
+
     model_config = SettingsConfigDict(env_file=ENV_FILE, extra="ignore")
 
 
