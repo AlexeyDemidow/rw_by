@@ -1,3 +1,4 @@
+from datetime import date
 from math import ceil
 
 from aiogram.filters.callback_data import CallbackData
@@ -164,5 +165,13 @@ def build_again_inline() -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
     kb.button(text="🔁 Другой маршрут", callback_data="again:route")
     kb.button(text="📅 Другая дата и маршрут", callback_data="again:date")
+    kb.adjust(1)
+    return kb.as_markup()
+
+
+def build_route_actions_inline() -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+    kb.button(text="⚡ Показать сейчас", callback_data="route:now")
+    kb.button(text="🔔 Присылать регулярно", callback_data="route:sub")
     kb.adjust(1)
     return kb.as_markup()
