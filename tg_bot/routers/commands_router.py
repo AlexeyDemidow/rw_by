@@ -218,7 +218,7 @@ async def on_again_route(callback: CallbackQuery, state: FSMContext):
 
 
 @router.callback_query(F.data == "again:date")
-async def on_again_date(callback: CallbackQuery, state: FSMContext):
+async def on_again_date(callback: CallbackQuery):
     today = datetime.now()
     max_date = today + timedelta(days=30)
 
