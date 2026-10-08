@@ -175,6 +175,14 @@ async def on_route_sub(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
 
+@router.message(Command("subscriptions"))
+async def cmd_subscriptions(message: Message):
+    items = subscriptions.list_for_chat(message.chat.id)
+    if not items:
+        await message.answer("У вас нет активных подписок.")
+        return
+    await message.answer("Ваши подписки (нажмите, чтобы отменить):", reply_markup=build_unsub_inline(items))
+
 @router.callback_query(F.data == "again:route")
 async def on_again_route(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
