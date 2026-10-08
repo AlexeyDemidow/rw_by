@@ -155,6 +155,23 @@ async def on_route_now(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
 
+@router.callback_query(F.data == "route:sub")
+async def on_route_sub(callback: CallbackQuery, state: FSMContext):
+    route = await _route_from_state(callback, state)
+    if not route:
+        return
+    trip_date, dep, arr = route
+
+    created = subscriptions.add(callback.message.chat.id, dep, arr, trip_date)
+    if created:
+        await callback.message.answer(
+            f"🔔 Подписка оформлена. Расписание будет приходить каждые "
+            f"{subscriptions.SEND_INTERVAL_MIN} мин до даты поездки.\n"
+            f"В тестовом режиме приходит каждую минуту (возможность выбора будет позже)\n"
+            "Отменить: /subscriptions"
+        )
+    else:
+        await callback.message.answer("Вы уже подписаны на этот маршрут и дату. Отменить: /subscriptions")
     await callback.answer()
 
 
