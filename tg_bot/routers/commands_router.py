@@ -101,11 +101,16 @@ async def on_pick(callback: CallbackQuery, callback_data: StationCb, state: FSMC
     dep = STATIONS[callback_data.src]
     arr = STATIONS[callback_data.value]
 
+    await state.update_data(dep=dep, arr=arr)
+
     await callback.message.edit_text(
         f"Маршрут: <b>{station_title(callback_data.src)} → {station_title(callback_data.value)}</b>\n"
-        f"Дата: {datetime.strptime(trip_date, '%Y-%m-%d').strftime('%d.%m.%Y')}",
+        f"Дата: {datetime.strptime(trip_date, '%Y-%m-%d').strftime('%d.%m.%Y')}\n\n"
+        "Что сделать?",
+        reply_markup=build_route_actions_inline(),
         parse_mode="HTML",
     )
+    await callback.answer()
 
     response = await ask_backend(payload={
         "dep_station": dep,
