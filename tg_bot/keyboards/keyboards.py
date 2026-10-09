@@ -161,14 +161,17 @@ def search_stations(query: str, exclude: int = -1) -> list[int]:
             contains.append(i)
     return starts + contains
 
+
+def build_stations_inline(step: str = "from", src: int = -1) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
-    for i in indices[page * PAGE_SIZE:(page + 1) * PAGE_SIZE]:
+    for i in MAIN_IDX:
+        if i == src:          # на шаге "to" исключаем станцию отправления
+            continue
         kb.button(
             text=station_title(i),
             callback_data=StationCb(action="pick", step=step, value=i, src=src),
         )
     kb.adjust(2)
-
     kb.row(
         InlineKeyboardButton(
             text="◀️",
@@ -178,6 +181,11 @@ def search_stations(query: str, exclude: int = -1) -> list[int]:
             text=f"{page + 1}/{total_pages}",
             callback_data=StationCb(action="no_action", step=step).pack(),
         ),
+            text="🔎 Найти другую станцию",
+            callback_data=StationCb(action="search", step=step, src=src).pack(),
+        )
+    )
+    return kb.as_markup()
         InlineKeyboardButton(
             text="▶️",
             callback_data=StationCb(action="page", step=step, value=(page + 1) % total_pages, src=src).pack(),
