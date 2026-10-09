@@ -199,6 +199,13 @@ async def on_route_sub(callback: CallbackQuery, state: FSMContext):
     route = await _route_from_state(callback, state)
     if not route:
         return
+    # отдельным сообщением, чтобы кнопки «Показать сейчас» / «Присылать регулярно» остались доступны
+    await callback.message.answer("Как часто присылать расписание?", reply_markup=build_interval_inline())
+    await callback.answer()
+
+    route = await _route_from_state(callback, state)
+    if not route:
+        return
     trip_date, dep, arr = route
 
     created = subscriptions.add(callback.message.chat.id, dep, arr, trip_date)
