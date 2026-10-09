@@ -102,6 +102,11 @@ async def on_pick(callback: CallbackQuery, callback_data: StationCb, state: FSMC
     await callback.answer()
 
 
+def _stations_prompt(step: str, src: int) -> str:
+    if step == "from":
+        return "Выберите станцию отправления:"
+    return f"Отправление: <b>{station_title(src)}</b>\nВыберите станцию прибытия:"
+
 async def _route_from_state(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     trip_date, dep, arr = data.get("trip_date"), data.get("dep"), data.get("arr")
