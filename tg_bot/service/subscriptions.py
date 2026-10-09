@@ -85,9 +85,6 @@ def list_for_chat(chat_id: int) -> list[dict]:
         return [dict(r) for r in rows]
 
 
-def all_active() -> list[dict]:
-    with closing(_connect()) as conn:
-        return [dict(r) for r in conn.execute("SELECT * FROM subscriptions").fetchall()]
 def claim_due() -> list[dict]:
     """Забирает подписки, которым пора слать уведомление, и сразу сдвигает им next_run_at на их интервал.
 
