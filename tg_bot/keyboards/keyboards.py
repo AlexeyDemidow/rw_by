@@ -7,6 +7,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 
 stations = [
+all_stations = [
     "Барановичи",
     "Бастуны",
     "Белоозёрск",
@@ -117,10 +118,11 @@ stations = [
 # Сортируем, оригинальные значения (с "+") сохраняем для парсера
 STATIONS: list[str] = sorted(stations, key=lambda s: s.replace("+", " "))
 PAGE_SIZE = 12  # 6 рядов по 2 кнопки
+ALL_STATIONS: list[str] = sorted(all_stations, key=lambda s: s.replace("+", " "))
 
 
 def station_title(idx: int) -> str:
-    return STATIONS[idx].replace("+", " ")
+    return ALL_STATIONS[idx].replace("+", " ")
 
 
 class StationCb(CallbackData, prefix="st"):
