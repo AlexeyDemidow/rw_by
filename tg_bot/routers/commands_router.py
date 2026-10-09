@@ -131,6 +131,27 @@ async def on_search_back(callback: CallbackQuery, callback_data: StationCb, stat
     )
     await callback.answer()
 
+
+@router.message(BotStates.searching, F.text, ~F.text.startswith("/"))
+async def on_station_query(message: Message, state: FSMContext):
+    data = await state.get_data()
+    step = data.get("search_step", "from")
+    src = data.get("search_src", -1)
+
+    found = search_stations(message.text, exclude=src)
+    if not found:
+        await message.answer(
+            "Ничего не нашёл. Введите хотя бы 2 буквы названия или его часть.",
+            reply_markup=build_search_results_inline([], step, src),
+        )
+        return
+
+    text = "Найденные станции:"
+    if len(found) > MAX_RESULTS:
+        text = f"Найдено {len(found)}, показаны первые {MAX_RESULTS}. Уточните запрос или выберите станцию:"
+    await message.answer(text, reply_markup=build_search_results_inline(found[:MAX_RESULTS], step, src))
+
+
 async def _route_from_state(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     trip_date, dep, arr = data.get("trip_date"), data.get("dep"), data.get("arr")
