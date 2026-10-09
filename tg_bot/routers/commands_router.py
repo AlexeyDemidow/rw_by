@@ -107,6 +107,19 @@ def _stations_prompt(step: str, src: int) -> str:
         return "Выберите станцию отправления:"
     return f"Отправление: <b>{station_title(src)}</b>\nВыберите станцию прибытия:"
 
+
+@router.callback_query(StationCb.filter(F.action == "search"))
+async def on_search(callback: CallbackQuery, callback_data: StationCb, state: FSMContext):
+    await state.set_state(BotStates.searching)
+    await state.update_data(search_step=callback_data.step, search_src=callback_data.src)
+
+    what = "отправления" if callback_data.step == "from" else "прибытия"
+    await callback.message.edit_text(
+        f"Введите название станции {what} или его часть (например, «полоц»):",
+        reply_markup=build_search_results_inline([], callback_data.step, callback_data.src),
+    )
+    await callback.answer()
+
 async def _route_from_state(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     trip_date, dep, arr = data.get("trip_date"), data.get("dep"), data.get("arr")
