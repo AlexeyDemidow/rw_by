@@ -174,13 +174,6 @@ def build_stations_inline(step: str = "from", src: int = -1) -> InlineKeyboardMa
     kb.adjust(2)
     kb.row(
         InlineKeyboardButton(
-            text="◀️",
-            callback_data=StationCb(action="page", step=step, value=(page - 1) % total_pages, src=src).pack(),
-        ),
-        InlineKeyboardButton(
-            text=f"{page + 1}/{total_pages}",
-            callback_data=StationCb(action="no_action", step=step).pack(),
-        ),
             text="🔎 Найти другую станцию",
             callback_data=StationCb(action="search", step=step, src=src).pack(),
         )
