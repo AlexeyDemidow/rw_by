@@ -50,6 +50,12 @@ def init_db() -> None:
             )
             """
         )
+        # миграция для БД, созданных до появления интервалов
+        cols = {r["name"] for r in conn.execute("PRAGMA table_info(subscriptions)")}
+        if "interval_min" not in cols:
+            conn.execute("ALTER TABLE subscriptions ADD COLUMN interval_min INTEGER NOT NULL DEFAULT 60")
+        if "next_run_at" not in cols:
+            conn.execute("ALTER TABLE subscriptions ADD COLUMN next_run_at TEXT")
 
 
 def add(chat_id: int, dep: str, arr: str, trip_date: str) -> bool:
