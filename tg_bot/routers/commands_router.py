@@ -66,6 +66,7 @@ async def process_calendar_selection(
 
 @router.callback_query(StationCb.filter(F.action == "pick"))
 async def on_pick(callback: CallbackQuery, callback_data: StationCb, state: FSMContext):
+    await state.set_state(BotStates.start)  # выходим из режима поиска, иначе следующий текст снова станет запросом
     data = await state.get_data()
     trip_date = data.get("trip_date")
 
@@ -79,15 +80,15 @@ async def on_pick(callback: CallbackQuery, callback_data: StationCb, state: FSMC
     if callback_data.step == "from":
         await callback.message.edit_text(
             f"Отправление: <b>{station_title(callback_data.value)}</b>\nВыберите станцию прибытия:",
-            reply_markup=build_stations_inline(step="to", page=0, src=callback_data.value),
+            reply_markup=build_stations_inline(step="to", src=callback_data.value),
             parse_mode="HTML",
         )
         await callback.answer()
         return
 
     # выбор станции прибытия
-    dep = STATIONS[callback_data.src]
-    arr = STATIONS[callback_data.value]
+    dep = ALL_STATIONS[callback_data.src]
+    arr = ALL_STATIONS[callback_data.value]
 
     await state.update_data(dep=dep, arr=arr)
 
