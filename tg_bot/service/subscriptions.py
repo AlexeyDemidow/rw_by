@@ -38,12 +38,14 @@ def init_db() -> None:
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS subscriptions (
-                id         INTEGER PRIMARY KEY AUTOINCREMENT,
-                chat_id    INTEGER NOT NULL,
-                dep        TEXT NOT NULL,
-                arr        TEXT NOT NULL,
-                trip_date  TEXT NOT NULL,
-                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                id           INTEGER PRIMARY KEY AUTOINCREMENT,
+                chat_id      INTEGER NOT NULL,
+                dep          TEXT NOT NULL,
+                arr          TEXT NOT NULL,
+                trip_date    TEXT NOT NULL,
+                created_at   TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                interval_min INTEGER NOT NULL DEFAULT 60,
+                next_run_at  TEXT,
                 UNIQUE (chat_id, dep, arr, trip_date)
             )
             """
