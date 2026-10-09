@@ -18,6 +18,9 @@ INTERVAL_LABELS = dict(INTERVAL_CHOICES)
 DB_PATH = Path(__file__).resolve().parents[2] / "subscriptions.db"
 
 
+def interval_label(minutes: int) -> str:
+    return INTERVAL_LABELS.get(minutes, f"{minutes} мин")
+
 def _connect() -> sqlite3.Connection:
     conn = sqlite3.connect(DB_PATH, timeout=10)
     conn.row_factory = sqlite3.Row
