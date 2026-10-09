@@ -120,6 +120,17 @@ async def on_search(callback: CallbackQuery, callback_data: StationCb, state: FS
     )
     await callback.answer()
 
+
+@router.callback_query(StationCb.filter(F.action == "back"))
+async def on_search_back(callback: CallbackQuery, callback_data: StationCb, state: FSMContext):
+    await state.set_state(BotStates.start)
+    await callback.message.edit_text(
+        _stations_prompt(callback_data.step, callback_data.src),
+        reply_markup=build_stations_inline(callback_data.step, callback_data.src),
+        parse_mode="HTML",
+    )
+    await callback.answer()
+
 async def _route_from_state(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     trip_date, dep, arr = data.get("trip_date"), data.get("dep"), data.get("arr")
