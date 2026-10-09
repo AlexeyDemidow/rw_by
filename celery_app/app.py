@@ -1,7 +1,7 @@
 from celery import Celery
 
 from tg_bot.bot_settings import settings
-from tg_bot.service.subscriptions import SEND_INTERVAL_MIN
+from tg_bot.service.subscriptions import TICK_SECONDS
 
 celery = Celery(
     "rw_by",
@@ -19,8 +19,8 @@ celery.conf.update(
     beat_schedule={
         "send-subscriptions": {
             "task": "celery_app.tasks.send_subscriptions",
-            "schedule": SEND_INTERVAL_MIN * 1.0,  # 1.0 - количество минут
-            "options": {"expires": SEND_INTERVAL_MIN * 60 - 60},
+            "schedule": float(TICK_SECONDS),
+            "options": {"expires": TICK_SECONDS - 10},
         },
     },
 )
