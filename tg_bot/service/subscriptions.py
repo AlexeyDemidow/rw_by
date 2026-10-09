@@ -112,6 +112,19 @@ def claim_due() -> list[dict]:
         conn.close()
 
 
+def postpone(sub_ids: list[int], minutes: int) -> None:
+    """Перенести следующую отправку (например, когда бэкенд был недоступен)."""
+    if not sub_ids:
+        return
+    marks = ",".join("?" * len(sub_ids))
+    with closing(_connect()) as conn, conn:
+        conn.execute(
+            f"UPDATE subscriptions SET next_run_at = datetime(?, '+' || ? || ' minutes') "
+            f"WHERE id IN ({marks})",
+            (_now(), minutes, *sub_ids),
+        )
+
+
 def remove(sub_id: int, chat_id: int) -> None:
     with closing(_connect()) as conn, conn:
         conn.execute("DELETE FROM subscriptions WHERE id = ? AND chat_id = ?", (sub_id, chat_id))
