@@ -6,7 +6,15 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 
-stations = [
+MAIN_STATIONS = [
+    'Минск',
+    'Брест',
+    'Гомель',
+    'Могилев',
+    'Гродно',
+    'Витебск',
+]
+
 all_stations = [
     "Барановичи",
     "Бастуны",
