@@ -88,6 +88,31 @@ def list_for_chat(chat_id: int) -> list[dict]:
 def all_active() -> list[dict]:
     with closing(_connect()) as conn:
         return [dict(r) for r in conn.execute("SELECT * FROM subscriptions").fetchall()]
+def claim_due() -> list[dict]:
+    """Забирает подписки, которым пора слать уведомление, и сразу сдвигает им next_run_at на их интервал.
+
+    Сдвиг в той же транзакции защищает от двойной отправки, если задачи наложатся.
+    """
+    now = _now()
+    conn = _connect()
+    conn.isolation_level = None          # транзакцией управляем вручную
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        rows = conn.execute(
+            "SELECT * FROM subscriptions WHERE next_run_at IS NULL OR next_run_at <= ?", (now,)
+        ).fetchall()
+        conn.execute(
+            "UPDATE subscriptions SET next_run_at = datetime(?, '+' || interval_min || ' minutes') "
+            "WHERE next_run_at IS NULL OR next_run_at <= ?",
+            (now, now),
+        )
+        conn.execute("COMMIT")
+        return [dict(r) for r in rows]
+    except Exception:
+        conn.execute("ROLLBACK")
+        raise
+    finally:
+        conn.close()
 
 
 def remove(sub_id: int, chat_id: int) -> None:
