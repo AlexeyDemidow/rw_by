@@ -179,10 +179,21 @@ def build_stations_inline(step: str = "from", src: int = -1) -> InlineKeyboardMa
         )
     )
     return kb.as_markup()
+
+
+def build_search_results_inline(indices: list[int], step: str, src: int) -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+    for i in indices:
+        kb.button(
+            text=station_title(i),
+            callback_data=StationCb(action="pick", step=step, value=i, src=src),
+        )
+    kb.adjust(2)
+    kb.row(
         InlineKeyboardButton(
-            text="▶️",
-            callback_data=StationCb(action="page", step=step, value=(page + 1) % total_pages, src=src).pack(),
-        ),
+            text="◀️ К основным станциям",
+            callback_data=StationCb(action="back", step=step, src=src).pack(),
+        )
     )
     return kb.as_markup()
 
