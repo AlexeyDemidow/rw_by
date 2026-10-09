@@ -1,10 +1,10 @@
 from datetime import date
-from math import ceil
 
 from aiogram.filters.callback_data import CallbackData
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
+from tg_bot.service.subscriptions import INTERVAL_CHOICES, interval_label
 
 MAIN_STATIONS = [
     'Минск',
@@ -211,6 +211,14 @@ def build_route_actions_inline() -> InlineKeyboardMarkup:
     kb.button(text="⚡ Показать сейчас", callback_data="route:now")
     kb.button(text="🔔 Присылать регулярно", callback_data="route:sub")
     kb.adjust(1)
+    return kb.as_markup()
+
+
+def build_interval_inline() -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+    for minutes, title in INTERVAL_CHOICES:
+        kb.button(text=title, callback_data=f"interval:{minutes}")
+    kb.adjust(2)
     return kb.as_markup()
 
 
