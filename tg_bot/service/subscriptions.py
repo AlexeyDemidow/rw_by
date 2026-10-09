@@ -2,7 +2,19 @@ import sqlite3
 from contextlib import closing
 from pathlib import Path
 
-SEND_INTERVAL_MIN = 60   # как часто рассылать (используется и в beat, и в тексте бота) по факту секунды
+TICK_SECONDS = 60       # как часто beat проверяет, у кого подошло время рассылки
+RETRY_DELAY_MIN = 5     # через сколько повторить, если бэкенд был недоступен
+
+INTERVAL_CHOICES: list[tuple[int, str]] = [
+    (15, "15 мин"),
+    (30, "30 мин"),
+    (60, "1 час"),
+    (180, "3 часа"),
+    (360, "6 часов"),
+    (720, "12 часов"),
+]
+INTERVAL_LABELS = dict(INTERVAL_CHOICES)
+
 DB_PATH = Path(__file__).resolve().parents[2] / "subscriptions.db"
 
 
