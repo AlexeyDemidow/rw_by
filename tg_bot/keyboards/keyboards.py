@@ -141,11 +141,9 @@ class StationCb(CallbackData, prefix="st"):
     src: int = -1     # индекс станции отправления (для шага "to")
 
 
-def build_stations_inline(step: str = "from", page: int = 0, src: int = -1) -> InlineKeyboardMarkup:
-    # на шаге "to" исключаем станцию отправления
-    indices = [i for i in range(len(STATIONS)) if i != src]
-    total_pages = max(1, ceil(len(indices) / PAGE_SIZE))
-    page %= total_pages  # зацикливаем: после последней страницы — первая
+def _norm(s: str) -> str:
+    return s.casefold().replace("ё", "е").replace("+", " ").strip()
+
 
     kb = InlineKeyboardBuilder()
     for i in indices[page * PAGE_SIZE:(page + 1) * PAGE_SIZE]:
