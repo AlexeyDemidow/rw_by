@@ -203,21 +203,33 @@ async def on_route_sub(callback: CallbackQuery, state: FSMContext):
     await callback.message.answer("Как часто присылать расписание?", reply_markup=build_interval_inline())
     await callback.answer()
 
+
+@router.callback_query(F.data.startswith("interval:"))
+async def on_interval(callback: CallbackQuery, state: FSMContext):
+    minutes = int(callback.data.split(":")[1])
+    if minutes not in subscriptions.INTERVAL_LABELS:
+        await callback.answer("Неизвестный интервал", show_alert=True)
+        return
+
     route = await _route_from_state(callback, state)
     if not route:
         return
     trip_date, dep, arr = route
 
-    created = subscriptions.add(callback.message.chat.id, dep, arr, trip_date)
+    created = subscriptions.add(callback.message.chat.id, dep, arr, trip_date, minutes)
+    label = subscriptions.interval_label(minutes)
     if created:
-        await callback.message.answer(
-            f"🔔 Подписка оформлена. Расписание будет приходить каждые "
-            f"{subscriptions.SEND_INTERVAL_MIN} мин до даты поездки.\n"
-            f"В тестовом режиме приходит каждую минуту (возможность выбора будет позже)\n"
+        text = (
+            f"🔔 Подписка оформлена.\nИнтервал: {label}, до даты поездки.\n"
+            "Первое сообщение придёт при ближайшей проверке (до минуты).\n\n"
             "Отменить: /subscriptions"
         )
     else:
-        await callback.message.answer("Вы уже подписаны на этот маршрут и дату. Отменить: /subscriptions")
+        text = (
+            f"🔄 Вы уже подписаны на этот маршрут и дату, интервал обновлён: {label}.\n\n"
+            "Отменить: /subscriptions"
+        )
+    await callback.message.edit_text(text)
     await callback.answer()
 
 
