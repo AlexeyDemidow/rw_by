@@ -124,9 +124,10 @@ all_stations = [
 ]
 
 # Сортируем, оригинальные значения (с "+") сохраняем для парсера
-STATIONS: list[str] = sorted(stations, key=lambda s: s.replace("+", " "))
-PAGE_SIZE = 12  # 6 рядов по 2 кнопки
 ALL_STATIONS: list[str] = sorted(all_stations, key=lambda s: s.replace("+", " "))
+# если название основной станции не найдётся в списке, это упадёт при старте, а не в чате
+MAIN_IDX: list[int] = [ALL_STATIONS.index(n) for n in MAIN_STATIONS]
+MAX_RESULTS = 10
 
 
 def station_title(idx: int) -> str:
