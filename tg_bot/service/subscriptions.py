@@ -1,5 +1,6 @@
 import sqlite3
 from contextlib import closing
+from datetime import datetime, timezone
 from pathlib import Path
 
 TICK_SECONDS = 60       # как часто beat проверяет, у кого подошло время рассылки
@@ -20,6 +21,11 @@ DB_PATH = Path(__file__).resolve().parents[2] / "subscriptions.db"
 
 def interval_label(minutes: int) -> str:
     return INTERVAL_LABELS.get(minutes, f"{minutes} мин")
+
+
+def _now() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+
 
 def _connect() -> sqlite3.Connection:
     conn = sqlite3.connect(DB_PATH, timeout=10)
