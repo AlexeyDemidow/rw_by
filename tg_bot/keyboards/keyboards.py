@@ -145,6 +145,22 @@ def _norm(s: str) -> str:
     return s.casefold().replace("ё", "е").replace("+", " ").strip()
 
 
+def search_stations(query: str, exclude: int = -1) -> list[int]:
+    """Индексы станций: сначала начинающиеся с запроса, потом содержащие его."""
+    q = _norm(query)
+    if len(q) < 2:
+        return []
+    starts, contains = [], []
+    for i, name in enumerate(ALL_STATIONS):
+        if i == exclude:
+            continue
+        n = _norm(name)
+        if n.startswith(q):
+            starts.append(i)
+        elif q in n:
+            contains.append(i)
+    return starts + contains
+
     kb = InlineKeyboardBuilder()
     for i in indices[page * PAGE_SIZE:(page + 1) * PAGE_SIZE]:
         kb.button(
