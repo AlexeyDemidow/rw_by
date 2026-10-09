@@ -58,14 +58,23 @@ def init_db() -> None:
             conn.execute("ALTER TABLE subscriptions ADD COLUMN next_run_at TEXT")
 
 
-def add(chat_id: int, dep: str, arr: str, trip_date: str) -> bool:
-    """True, если подписка новая; False, если такая уже есть."""
+def add(chat_id: int, dep: str, arr: str, trip_date: str, interval_min: int) -> bool:
+    """True — подписка новая; False — такая уже была, ей обновлён интервал."""
     with closing(_connect()) as conn, conn:
         cur = conn.execute(
-            "INSERT OR IGNORE INTO subscriptions (chat_id, dep, arr, trip_date) VALUES (?, ?, ?, ?)",
-            (chat_id, dep, arr, trip_date),
+            "INSERT OR IGNORE INTO subscriptions (chat_id, dep, arr, trip_date, interval_min) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (chat_id, dep, arr, trip_date, interval_min),
         )
-        return cur.rowcount == 1
+        if cur.rowcount == 1:
+            return True      # next_run_at = NULL: первая рассылка на ближайшем тике
+        conn.execute(
+            "UPDATE subscriptions "
+            "SET interval_min = ?, next_run_at = datetime(?, '+' || ? || ' minutes') "
+            "WHERE chat_id = ? AND dep = ? AND arr = ? AND trip_date = ?",
+            (interval_min, _now(), interval_min, chat_id, dep, arr, trip_date),
+        )
+        return False
 
 
 def list_for_chat(chat_id: int) -> list[dict]:
