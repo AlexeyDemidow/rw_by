@@ -123,6 +123,12 @@ all_stations = [
     "Юратишки",
 ]
 
+STORES = [
+    ("🤖 Android", "https://play.google.com/store/apps/details?id=by.rw.client"),
+    ("🍏 iPhone", "https://apps.apple.com/us/app/id1489334970"),
+    # ("📱 Huawei", "https://appgallery.cloud.huawei.com/ag/n/app/C103446265"),  # не работает, хотя на сайте ссылка есть
+]
+
 # Сортируем, оригинальные значения (с "+") сохраняем для парсера
 ALL_STATIONS: list[str] = sorted(all_stations, key=lambda s: s.replace("+", " "))
 # если название основной станции не найдётся в списке, это упадёт при старте, а не в чате
@@ -198,8 +204,12 @@ def build_search_results_inline(indices: list[int], step: str, src: int) -> Inli
     return kb.as_markup()
 
 
-def build_again_inline() -> InlineKeyboardMarkup:
+def build_again_inline(order_url: str | None = None) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
+    if order_url:
+        kb.button(text="🌐 Купить на сайте", url=order_url)
+    for text, url in STORES:
+        kb.button(text=text, url=url)
     kb.button(text="🔁 Другой маршрут", callback_data="again:route")
     kb.button(text="📅 Другая дата и маршрут", callback_data="again:date")
     kb.adjust(1)
