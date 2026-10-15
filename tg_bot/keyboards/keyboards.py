@@ -124,8 +124,8 @@ all_stations = [
 ]
 
 STORES = [
-    ("🤖 Android", "https://play.google.com/store/apps/details?id=by.rw.client"),
-    ("🍏 iPhone", "https://apps.apple.com/us/app/id1489334970"),
+    ("🤖Открыть приложение на Android", "https://play.google.com/store/apps/details?id=by.rw.client"),
+    ("🍏Открыть приложение на iPhone", "https://apps.apple.com/us/app/id1489334970"),
     # ("📱 Huawei", "https://appgallery.cloud.huawei.com/ag/n/app/C103446265"),  # не работает, хотя на сайте ссылка есть
 ]
 
