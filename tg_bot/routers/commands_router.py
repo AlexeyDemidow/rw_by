@@ -189,7 +189,9 @@ async def on_route_now(callback: CallbackQuery, state: FSMContext):
         await callback.message.answer(
             chunk,
             parse_mode="HTML",
-            reply_markup=build_again_inline() if is_last else None,
+            reply_markup=build_again_inline(
+                order_url=response.get("order_url"),
+            ) if is_last else None,
         )
     await callback.answer()
 
