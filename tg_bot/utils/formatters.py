@@ -69,11 +69,6 @@ def format_trains(response: dict) -> str:
 
     text = header + "\n" + "\n\n".join(blocks)
 
-    order_url = response.get("order_url") if isinstance(response, dict) else None
-    if order_url:
-        safe_url = escape(order_url, quote=True)
-        text += f'\n\n🎫 <a href="{safe_url}">Купить билет на pass.rw.by</a>'
-
     return text
 
 
