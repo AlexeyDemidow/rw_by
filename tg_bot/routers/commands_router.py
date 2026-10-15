@@ -157,19 +157,21 @@ async def _route_from_state(callback: CallbackQuery, state: FSMContext):
     trip_date, dep, arr = data.get("trip_date"), data.get("dep"), data.get("arr")
     if not (trip_date and dep and arr):
         await callback.message.answer("⚠️ Сначала выберите дату и маршрут через /start")
-        await callback.answer()
         return None
     return trip_date, dep, arr
 
 
 @router.callback_query(F.data == "route:now")
 async def on_route_now(callback: CallbackQuery, state: FSMContext):
+    await callback.answer()  # сразу, иначе query протухнет, пока бэкенд ходит на rw.by
+
     route = await _route_from_state(callback, state)
     if not route:
         return
     trip_date, dep, arr = route
 
     try:
+        status = await callback.message.answer("⏳ Ищу поезда…")
         response = await ask_backend(payload={
             "dep_station": dep,
             "arr_station": arr,
@@ -180,9 +182,8 @@ async def on_route_now(callback: CallbackQuery, state: FSMContext):
             "⚠️ Сервер временно недоступен",
             reply_markup=build_again_inline(),
         )
-        await callback.answer()
         return
-
+    await status.delete()
     chunks = split_message(format_trains(response))
     for i, chunk in enumerate(chunks):
         is_last = i == len(chunks) - 1
@@ -193,17 +194,15 @@ async def on_route_now(callback: CallbackQuery, state: FSMContext):
                 order_url=response.get("order_url"),
             ) if is_last else None,
         )
-    await callback.answer()
 
 
 @router.callback_query(F.data == "route:sub")
 async def on_route_sub(callback: CallbackQuery, state: FSMContext):
+    await callback.answer()
     route = await _route_from_state(callback, state)
     if not route:
         return
-    # отдельным сообщением, чтобы кнопки «Показать сейчас» / «Присылать регулярно» остались доступны
     await callback.message.answer("Как часто присылать расписание?", reply_markup=build_interval_inline())
-    await callback.answer()
 
 
 @router.callback_query(F.data.startswith("interval:"))
@@ -232,7 +231,6 @@ async def on_interval(callback: CallbackQuery, state: FSMContext):
             "Отменить: /subscriptions"
         )
     await callback.message.edit_text(text)
-    await callback.answer()
 
 
 @router.message(Command("subscriptions"))
