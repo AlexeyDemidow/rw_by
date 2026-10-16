@@ -253,10 +253,23 @@ async def on_train_manual(callback: CallbackQuery, state: FSMContext):
     route = await _route_from_state(callback, state)
     if not route:
         return
-    await callback.message.answer("Как часто присылать расписание?", reply_markup=build_interval_inline())
     await state.set_state(BotStates.entering_train)
     await callback.message.edit_text("Введите номер поезда, например 705Б или 653:")
 
+
+@router.message(BotStates.entering_train, F.text, ~F.text.startswith("/"))
+async def on_train_text(message: Message, state: FSMContext):
+    number = subscriptions.norm_train_number(message.text)
+    if not subscriptions.RE_TRAIN.match(number):
+        await message.answer("Не похоже на номер поезда. Пример: 705Б или 653. Попробуйте ещё раз.")
+        return
+    data = await state.get_data()
+    if not (data.get("trip_date") and data.get("dep") and data.get("arr")):
+        await message.answer("⚠️ Сначала выберите дату и маршрут через /start")
+        return
+    await state.update_data(train_number=number)
+    await state.set_state(BotStates.start)
+    await message.answer(_interval_prompt(number), reply_markup=build_interval_inline(), parse_mode="HTML")
 
 
 @router.callback_query(F.data.startswith("interval:"))
