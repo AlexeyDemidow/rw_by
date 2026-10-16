@@ -59,9 +59,15 @@ def format_train(t: dict) -> str:
     return "\n".join(lines)
 
 
-    text = header + "\n" + "\n\n".join(blocks)
+def format_trains(response: dict) -> str:
+    """Превращает ответ бэкенда в читаемый текст для Telegram."""
+    trains = response.get("trains", []) if isinstance(response, dict) else []
 
-    return text
+    if not trains:
+        return "🚆 Рейсов не найдено."
+
+    header = f"🚆 Найдено рейсов: {len(trains)}\n"
+    return header + "\n" + "\n\n".join(format_train(t) for t in trains)
 
 
 def split_message(text: str, limit: int = 3500) -> list[str]:
