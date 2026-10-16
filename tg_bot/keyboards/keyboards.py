@@ -230,7 +230,7 @@ def build_buy_inline(order_url: str | None = None) -> InlineKeyboardMarkup:
 def build_route_actions_inline() -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
     kb.button(text="⚡ Показать сейчас", callback_data="route:now")
-    kb.button(text="🔔 Присылать регулярно", callback_data="route:sub")
+    kb.button(text="🔔 Следить за рейсом", callback_data="route:sub")
 
     kb.button(text="🔁 Другой маршрут", callback_data="again:route")
     kb.button(text="📅 Другая дата и маршрут", callback_data="again:date")
