@@ -18,6 +18,10 @@ INTERVAL_LABELS = dict(INTERVAL_CHOICES)
 
 DB_PATH = Path(__file__).resolve().parents[2] / "subscriptions.db"
 
+RE_TRAIN = re.compile(r"^\d{1,4}[А-Я]?$")
+# латинские двойники кириллических букв (на сайте номера вида «705Б»)
+_LATIN_TO_CYR = str.maketrans("ABEKMHOPCTX", "АВЕКМНОРСТХ")
+
 
 def interval_label(minutes: int) -> str:
     return INTERVAL_LABELS.get(minutes, f"{minutes} мин")
