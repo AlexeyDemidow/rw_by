@@ -247,6 +247,23 @@ def build_interval_inline() -> InlineKeyboardMarkup:
     return kb.as_markup()
 
 
+def build_train_pick_inline(trains: list[dict]) -> InlineKeyboardMarkup:
+    """Список поездов маршрута для подписки + ввод номера вручную (пока что распроданных рейсов в выдаче нет)."""
+    kb = InlineKeyboardBuilder()
+    seen: set[str] = set()
+    for t in trains:
+        number = str(t.get("train_number", "")).strip()
+        if not number or number in seen:
+            continue
+        seen.add(number)
+        dep_time, arr_time = t.get("dep_time"), t.get("arr_time")
+        times = f" · {dep_time} → {arr_time}" if dep_time and arr_time else ""
+        kb.button(text=f"🚆 № {number}{times}", callback_data=f"trainpick:{number}")
+    kb.adjust(1)
+    kb.row(InlineKeyboardButton(text="✍️ Ввести номер вручную", callback_data="trainmanual"))
+    return kb.as_markup()
+
+
 def build_unsub_inline(items: list[dict]) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
     for s in items:
