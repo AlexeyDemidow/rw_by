@@ -36,6 +36,25 @@ async def _send(
         log.exception("Не удалось отправить сообщение в чат %s", chat_id)
 
 
+def _build_chunks(sub: dict, dep: str, arr: str, d: str, resp: dict) -> list[str]:
+    """Текст рассылки для одной подписки: рейс из подписки либо (старые подписки) всё направление."""
+    route = f"{escape(dep.replace('+', ' '))} → {escape(arr.replace('+', ' '))}, {d}"
+    wanted = sub.get("train_number") or ""
+    if not wanted:       # подписки, оформленные до появления выбора рейса
+        return split_message(f"🔔 <b>{route}</b>\n\n" + format_trains(resp))
+
+    trains = resp.get("trains", []) if isinstance(resp, dict) else []
+    mine = [t for t in trains if subs.norm_train_number(str(t.get("train_number", ""))) == wanted]
+    if mine:
+        body = "\n\n".join(format_train(t) for t in mine)
+    else:
+        body = (
+            f"🚆 <b>№ {escape(wanted)}</b>: в выдаче нет. "
+            "Скорее всего, билетов не осталось (или поезд не ходит в эту дату)."
+        )
+    return split_message(f"🔔 <b>№ {escape(wanted)}</b> · {route}\n\n" + body)
+
+
 async def _run() -> None:
     subs.init_db()
     subs.delete_expired(date.today().isoformat())
