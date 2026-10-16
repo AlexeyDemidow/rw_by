@@ -1,3 +1,5 @@
+import re
+
 import sqlite3
 from contextlib import closing
 from datetime import datetime, timezone
@@ -21,6 +23,11 @@ DB_PATH = Path(__file__).resolve().parents[2] / "subscriptions.db"
 RE_TRAIN = re.compile(r"^\d{1,4}[А-Я]?$")
 # латинские двойники кириллических букв (на сайте номера вида «705Б»)
 _LATIN_TO_CYR = str.maketrans("ABEKMHOPCTX", "АВЕКМНОРСТХ")
+
+
+def norm_train_number(raw: str) -> str:
+    """'705б ' -> '705Б'; латинские буквы-двойники заменяются кириллическими."""
+    return "".join(raw.split()).upper().translate(_LATIN_TO_CYR)
 
 
 def interval_label(minutes: int) -> str:
