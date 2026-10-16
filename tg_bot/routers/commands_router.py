@@ -232,6 +232,19 @@ async def on_route_sub(callback: CallbackQuery, state: FSMContext):
         "Сейчас нет рейсов с билетами.\n"
     ) + "Нужного поезда нет в списке (например, билеты распроданы)? Введите его номер вручную."
     await status.edit_text(text, reply_markup=build_train_pick_inline(trains))
+
+
+@router.callback_query(F.data.startswith("trainpick:"))
+async def on_train_pick(callback: CallbackQuery, state: FSMContext):
+    await callback.answer()
+    route = await _route_from_state(callback, state)
+    if not route:
+        return
+    number = subscriptions.norm_train_number(callback.data.split(":", 1)[1])
+    await state.update_data(train_number=number)
+    await callback.message.edit_text(
+        _interval_prompt(number), reply_markup=build_interval_inline(), parse_mode="HTML"
+    )
     await callback.answer()
     route = await _route_from_state(callback, state)
     if not route:
