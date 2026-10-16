@@ -216,6 +216,17 @@ def build_again_inline(order_url: str | None = None) -> InlineKeyboardMarkup:
     return kb.as_markup()
 
 
+def build_buy_inline(order_url: str | None = None) -> InlineKeyboardMarkup:
+    """Кнопки покупки для рассылки"""
+    kb = InlineKeyboardBuilder()
+    if order_url:
+        kb.button(text="🌐 Купить на сайте", url=order_url)
+    for text, url in STORES:
+        kb.button(text=text, url=url)
+    kb.adjust(1)
+    return kb.as_markup()
+
+
 def build_route_actions_inline() -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
     kb.button(text="⚡ Показать сейчас", callback_data="route:now")
