@@ -62,6 +62,23 @@ def init_db() -> None:
             """
         )
         # миграция для БД, созданных до появления интервалов
+def _create_table_sql(name: str) -> str:
+    # train_number = '' — старая подписка на всё направление (NULL не годится: в UNIQUE NULL-ы считаются разными)
+    return f"""
+        CREATE TABLE IF NOT EXISTS {name} (
+            id           INTEGER PRIMARY KEY AUTOINCREMENT,
+            chat_id      INTEGER NOT NULL,
+            dep          TEXT NOT NULL,
+            arr          TEXT NOT NULL,
+            trip_date    TEXT NOT NULL,
+            created_at   TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            interval_min INTEGER NOT NULL DEFAULT 60,
+            next_run_at  TEXT,
+            train_number TEXT NOT NULL DEFAULT '',
+            UNIQUE (chat_id, dep, arr, trip_date, train_number)
+        )
+    """
+
         cols = {r["name"] for r in conn.execute("PRAGMA table_info(subscriptions)")}
         if "interval_min" not in cols:
             conn.execute("ALTER TABLE subscriptions ADD COLUMN interval_min INTEGER NOT NULL DEFAULT 60")
