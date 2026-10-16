@@ -278,26 +278,37 @@ async def on_interval(callback: CallbackQuery, state: FSMContext):
     if minutes not in subscriptions.INTERVAL_LABELS:
         await callback.answer("Неизвестный интервал", show_alert=True)
         return
+    await callback.answer()
 
     route = await _route_from_state(callback, state)
     if not route:
         return
     trip_date, dep, arr = route
+    train_number = (await state.get_data()).get("train_number")
+    if not train_number:
+        await callback.message.answer("⚠️ Рейс не выбран. Начните заново через /start")
+        return
 
-    created = subscriptions.add(callback.message.chat.id, dep, arr, trip_date, minutes)
+    created = subscriptions.add(callback.message.chat.id, dep, arr, trip_date, train_number, minutes)
     label = subscriptions.interval_label(minutes)
+    what = (
+        f"Поезд <b>№ {escape(train_number)}</b>, "
+        f"{escape(dep.replace('+', ' '))} → {escape(arr.replace('+', ' '))}, "
+        f"{datetime.strptime(trip_date, '%Y-%m-%d').strftime('%d.%m.%Y')}"
+    )
     if created:
         text = (
-            f"🔔 Подписка оформлена.\nИнтервал: {label}, до даты поездки.\n"
+            f"🔔 Подписка оформлена.\n{what}\nИнтервал: {label}, до даты поездки.\n"
             "Первое сообщение придёт при ближайшей проверке (до минуты).\n\n"
             "Отменить: /subscriptions"
         )
     else:
         text = (
-            f"🔄 Вы уже подписаны на этот маршрут и дату, интервал обновлён: {label}.\n\n"
+            f"🔄 Вы уже следите за этим рейсом, интервал обновлён: {label}.\n{what}\n\n"
             "Отменить: /subscriptions"
         )
-    await callback.message.edit_text(text)
+    await state.update_data(train_number=None)
+    await callback.message.edit_text(text, parse_mode="HTML")
 
 
 @router.message(Command("subscriptions"))
