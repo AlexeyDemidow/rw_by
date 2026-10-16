@@ -201,6 +201,10 @@ async def on_route_now(callback: CallbackQuery, state: FSMContext):
         )
 
 
+def _interval_prompt(train_number: str) -> str:
+    return f"Поезд <b>№ {escape(train_number)}</b>\nКак часто проверять наличие мест?"
+
+
 @router.callback_query(F.data == "route:sub")
 async def on_route_sub(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
