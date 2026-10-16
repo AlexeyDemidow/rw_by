@@ -82,12 +82,10 @@ async def _run() -> None:
                 continue
 
             d = date.fromisoformat(trip_date).strftime("%d.%m.%Y")
-            header = (
-                f"🔔 <b>{escape(dep.replace('+', ' '))} → {escape(arr.replace('+', ' '))}</b>, {d}\n\n"
-            )
-            chunks = split_message(header + format_trains(resp))
+            buy_kb = build_buy_inline(resp.get("order_url") if isinstance(resp, dict) else None)
             for sub in group:
-                await _send(bot, sub["chat_id"], chunks)
+                await _send(bot, sub["chat_id"], _build_chunks(sub, dep, arr, d, resp), buy_kb)
+
     finally:
         await bot.session.close()
 
