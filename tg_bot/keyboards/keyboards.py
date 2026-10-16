@@ -270,6 +270,7 @@ def build_unsub_inline(items: list[dict]) -> InlineKeyboardMarkup:
         d = date.fromisoformat(s["trip_date"]).strftime("%d.%m")
         title = (
             f"❌ {s['dep'].replace('+', ' ')} → {s['arr'].replace('+', ' ')}, {d}"
+            f" · {('№ ' + s['train_number']) if s.get('train_number') else 'все рейсы'}"
             f" · {interval_label(s['interval_min'])}"
         )
         kb.button(text=title, callback_data=f"unsub:{s['id']}")
