@@ -85,21 +85,22 @@ def init_db() -> None:
             conn.execute("ALTER TABLE subscriptions_new RENAME TO subscriptions")
 
 
-def add(chat_id: int, dep: str, arr: str, trip_date: str, interval_min: int) -> bool:
+def add(chat_id: int, dep: str, arr: str, trip_date: str, train_number: str, interval_min: int) -> bool:
     """True — подписка новая; False — такая уже была, ей обновлён интервал."""
+    train_number = norm_train_number(train_number)
     with closing(_connect()) as conn, conn:
         cur = conn.execute(
-            "INSERT OR IGNORE INTO subscriptions (chat_id, dep, arr, trip_date, interval_min) "
-            "VALUES (?, ?, ?, ?, ?)",
-            (chat_id, dep, arr, trip_date, interval_min),
+            "INSERT OR IGNORE INTO subscriptions (chat_id, dep, arr, trip_date, train_number, interval_min) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            (chat_id, dep, arr, trip_date, train_number, interval_min),
         )
         if cur.rowcount == 1:
             return True      # next_run_at = NULL: первая рассылка на ближайшем тике
         conn.execute(
             "UPDATE subscriptions "
             "SET interval_min = ?, next_run_at = datetime(?, '+' || ? || ' minutes') "
-            "WHERE chat_id = ? AND dep = ? AND arr = ? AND trip_date = ?",
-            (interval_min, _now(), interval_min, chat_id, dep, arr, trip_date),
+            "WHERE chat_id = ? AND dep = ? AND arr = ? AND trip_date = ? AND train_number = ?",
+            (interval_min, _now(), interval_min, chat_id, dep, arr, trip_date, train_number),
         )
         return False
 
