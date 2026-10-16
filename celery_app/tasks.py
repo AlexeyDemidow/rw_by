@@ -20,10 +20,15 @@ from tg_bot.keyboards.keyboards import build_buy_inline
 log = logging.getLogger(__name__)
 
 
-async def _send(bot: Bot, chat_id: int, chunks: list[str]) -> None:
+async def _send(
+    bot: Bot, chat_id: int, chunks: list[str], reply_markup: InlineKeyboardMarkup | None = None
+) -> None:
     try:
-        for chunk in chunks:
-            await bot.send_message(chat_id, chunk, parse_mode="HTML")
+        for i, chunk in enumerate(chunks):
+            is_last = i == len(chunks) - 1      # кнопки только под последним куском
+            await bot.send_message(
+                chat_id, chunk, parse_mode="HTML", reply_markup=reply_markup if is_last else None
+            )
     except TelegramForbiddenError:        # пользователь заблокировал бота
         subs.remove_chat(chat_id)
         log.info("Чат %s заблокировал бота, подписки удалены", chat_id)
