@@ -24,48 +24,40 @@ def _format_carriages(carriages: list[dict]) -> str:
     return " | ".join(parts)
 
 
-def format_trains(response: dict) -> str:
-    """Превращает ответ бэкенда в читаемый текст для Telegram."""
-    trains = response.get("trains", []) if isinstance(response, dict) else []
+def format_train(t: dict) -> str:
+    """Один поезд -> блок текста для Telegram."""
+    number = escape(str(t.get("train_number", "—")))
+    train_type = escape(str(t.get("train_type", "")))
+    dep_station = escape(str(t.get("dep_station", "—")))
+    arr_station = escape(str(t.get("arr_station", "—")))
+    dep_time = escape(str(t.get("dep_time", "—")))
+    arr_time = escape(str(t.get("arr_time", "—")))
+    duration = escape(str(t.get("duration", "—")))
+    days = escape(str(t.get("days", "")))
+    badges = t.get("badges", [])
 
-    if not trains:
-        return "🚆 Рейсов не найдено."
+    title = f"🚆 <b>№ {number}</b>"
+    if badges:
+        safe_badges = ", ".join(escape(str(b)) for b in badges)
+        title += f"  <i>({safe_badges})</i>"
 
-    header = f"🚆 Найдено рейсов: {len(trains)}\n"
-    blocks = []
+    lines = [
+        title,
+        f"   {dep_station} → {arr_station}",
+        f"   🕐 {dep_time} → {arr_time}  ({duration})",
+    ]
 
-    for t in trains:
-        number = escape(str(t.get("train_number", "—")))
-        train_type = escape(str(t.get("train_type", "")))
-        dep_station = escape(str(t.get("dep_station", "—")))
-        arr_station = escape(str(t.get("arr_station", "—")))
-        dep_time = escape(str(t.get("dep_time", "—")))
-        arr_time = escape(str(t.get("arr_time", "—")))
-        duration = escape(str(t.get("duration", "—")))
-        days = escape(str(t.get("days", "")))
-        badges = t.get("badges", [])
+    if train_type:
+        lines.append(f"   🚉 {train_type}")
+    if days:
+        lines.append(f"   📅 {days}")
 
-        title = f"🚆 <b>№ {number}</b>"
-        if badges:
-            safe_badges = ", ".join(escape(str(b)) for b in badges)
-            title += f"  <i>({safe_badges})</i>"
+    carriages = _format_carriages(t.get("carriages", []))
+    if carriages:
+        lines.append(f"   💺 {carriages}")
 
-        lines = [
-            title,
-            f"   {dep_station} → {arr_station}",
-            f"   🕐 {dep_time} → {arr_time}  ({duration})",
-        ]
+    return "\n".join(lines)
 
-        if train_type:
-            lines.append(f"   🚉 {train_type}")
-        if days:
-            lines.append(f"   📅 {days}")
-
-        carriages = _format_carriages(t.get("carriages", []))
-        if carriages:
-            lines.append(f"   💺 {carriages}")
-
-        blocks.append("\n".join(lines))
 
     text = header + "\n" + "\n\n".join(blocks)
 
