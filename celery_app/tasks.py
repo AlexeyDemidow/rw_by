@@ -8,12 +8,14 @@ from html import escape
 import aiohttp
 from aiogram import Bot
 from aiogram.exceptions import TelegramForbiddenError
+from aiogram.types import InlineKeyboardMarkup
 
 from celery_app.app import celery
 from tg_bot.bot_settings import settings
 from tg_bot.service import subscriptions as subs
 from tg_bot.service.client import ask_backend
-from tg_bot.utils.formatters import format_trains, split_message
+from tg_bot.utils.formatters import format_train, format_trains, split_message
+from tg_bot.keyboards.keyboards import build_buy_inline
 
 log = logging.getLogger(__name__)
 
