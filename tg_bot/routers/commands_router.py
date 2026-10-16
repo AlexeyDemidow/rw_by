@@ -207,6 +207,31 @@ def _interval_prompt(train_number: str) -> str:
 
 @router.callback_query(F.data == "route:sub")
 async def on_route_sub(callback: CallbackQuery, state: FSMContext):
+    await callback.answer()  # сразу, иначе query протухнет, пока бэкенд ходит на rw.by
+    await state.set_state(BotStates.start)  # выходим из ручного ввода номера, если были в нём
+    route = await _route_from_state(callback, state)
+    if not route:
+        return
+    trip_date, dep, arr = route
+
+    status = await callback.message.answer("⏳ Ищу поезда…")
+    try:
+        response = await ask_backend(payload={
+            "dep_station": dep,
+            "arr_station": arr,
+            "trip_date": trip_date,
+        })
+    except (aiohttp.ClientError, asyncio.TimeoutError):
+        await status.edit_text("⚠️ Сервер временно недоступен", reply_markup=build_again_inline())
+        return
+
+    trains = response.get("trains", []) if isinstance(response, dict) else []
+    text = (
+        "Выберите рейс, за которым следить.\n"
+        if trains else
+        "Сейчас нет рейсов с билетами.\n"
+    ) + "Нужного поезда нет в списке (например, билеты распроданы)? Введите его номер вручную."
+    await status.edit_text(text, reply_markup=build_train_pick_inline(trains))
     await callback.answer()
     route = await _route_from_state(callback, state)
     if not route:
