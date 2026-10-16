@@ -245,11 +245,18 @@ async def on_train_pick(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_text(
         _interval_prompt(number), reply_markup=build_interval_inline(), parse_mode="HTML"
     )
+
+
+@router.callback_query(F.data == "trainmanual")
+async def on_train_manual(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
     route = await _route_from_state(callback, state)
     if not route:
         return
     await callback.message.answer("Как часто присылать расписание?", reply_markup=build_interval_inline())
+    await state.set_state(BotStates.entering_train)
+    await callback.message.edit_text("Введите номер поезда, например 705Б или 653:")
+
 
 
 @router.callback_query(F.data.startswith("interval:"))
