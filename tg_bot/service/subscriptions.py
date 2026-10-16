@@ -44,24 +44,6 @@ def _connect() -> sqlite3.Connection:
     return conn
 
 
-def init_db() -> None:
-    with closing(_connect()) as conn, conn:
-        conn.execute(
-            """
-            CREATE TABLE IF NOT EXISTS subscriptions (
-                id           INTEGER PRIMARY KEY AUTOINCREMENT,
-                chat_id      INTEGER NOT NULL,
-                dep          TEXT NOT NULL,
-                arr          TEXT NOT NULL,
-                trip_date    TEXT NOT NULL,
-                created_at   TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                interval_min INTEGER NOT NULL DEFAULT 60,
-                next_run_at  TEXT,
-                UNIQUE (chat_id, dep, arr, trip_date)
-            )
-            """
-        )
-        # миграция для БД, созданных до появления интервалов
 def _create_table_sql(name: str) -> str:
     # train_number = '' — старая подписка на всё направление (NULL не годится: в UNIQUE NULL-ы считаются разными)
     return f"""
@@ -79,11 +61,28 @@ def _create_table_sql(name: str) -> str:
         )
     """
 
+
+def init_db() -> None:
+    with closing(_connect()) as conn, conn:
+        conn.execute(_create_table_sql("subscriptions"))
+        # миграции для БД, созданных раньше
         cols = {r["name"] for r in conn.execute("PRAGMA table_info(subscriptions)")}
         if "interval_min" not in cols:
             conn.execute("ALTER TABLE subscriptions ADD COLUMN interval_min INTEGER NOT NULL DEFAULT 60")
         if "next_run_at" not in cols:
             conn.execute("ALTER TABLE subscriptions ADD COLUMN next_run_at TEXT")
+        if "train_number" not in cols:
+            # UNIQUE менять через ALTER нельзя — пересоздаём таблицу, старые подписки сохраняются
+            conn.execute("DROP TABLE IF EXISTS subscriptions_new")
+            conn.execute(_create_table_sql("subscriptions_new"))
+            conn.execute(
+                "INSERT INTO subscriptions_new "
+                "(id, chat_id, dep, arr, trip_date, created_at, interval_min, next_run_at) "
+                "SELECT id, chat_id, dep, arr, trip_date, created_at, interval_min, next_run_at "
+                "FROM subscriptions"
+            )
+            conn.execute("DROP TABLE subscriptions")
+            conn.execute("ALTER TABLE subscriptions_new RENAME TO subscriptions")
 
 
 def add(chat_id: int, dep: str, arr: str, trip_date: str, interval_min: int) -> bool:
